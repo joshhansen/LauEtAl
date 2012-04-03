@@ -1,11 +1,25 @@
 package jhn.lauetal;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
 
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -80,6 +94,8 @@ public class LauEtAl {
 			String[] pos = posTag(sArr);
 			String[] chunkTags = chunk(sArr, pos);
 			
+			
+			return null;
 		}
 	}
 	
@@ -102,23 +118,48 @@ public class LauEtAl {
 		}
 		
 		public double raco(String label1, String label2) {
-			
+			return 0.0;//TODO
 		}
 	}
 	
 	private static class Labeler {
 		private final OpenNLPHelper openNlp;
 		private final RacoCalculator raco;
+		private final LuceneHelper lucene;
 	
 	
-		public Labeler(OpenNLPHelper openNlp, RacoCalculator raco) {
+		public Labeler(String luceneDir, OpenNLPHelper openNlp, RacoCalculator raco) {
+			this.lucene = new LuceneHelper(luceneDir);
 			this.openNlp = openNlp;
 			this.raco = raco;
 		}
-
+		
 		public List<String> labelTopic(String topWords) throws IOException {
+			Set<String> candidates = candidateLabels(topWords);
 			
+		}
+		
+		private static class ScoredLabel {
+			final String label;
+			final double score;
+			public ScoredLabel(String label, double score) {
+				this.label = label;
+				this.score = score;
+			}
+		}
+		
+		private List<ScoredLabel> rank(Set<String> labels) {
+			List<ScoredLabel> scored = new ArrayList<ScoredLabel>();
 			
+			//TODO
+			
+			Collections.sort(scored, new Comparator<ScoredLabel>(){
+				public int compare(ScoredLabel o1, ScoredLabel o2) {
+					return Double.compare(o2.score, o1.score);
+				}
+			});
+			
+			return scored;
 		}
 		
 		private Set<String> candidateLabels(String topWords) throws IOException {
@@ -144,7 +185,7 @@ public class LauEtAl {
 				Set<String> chunks = openNlp.chunks(primaryCandidate);
 				for(String chunk : chunks) {
 					for(String ngram : componentNgrams(chunk)) {
-						if(isWikipediaArticleTitle(ngram)) {
+						if(lucene.isWikipediaArticleTitle(ngram)) {
 							secondaryCandidates.add(ngram);
 						}
 					}
@@ -159,9 +200,7 @@ public class LauEtAl {
 			
 		}
 		
-		private static boolean isWikipediaArticleTitle(String s) {
-			
-		}
+
 		
 		private static Set<String> fallbackCandidates(String topWords) {
 			Set<String> fallbacks = new HashSet<String>();
@@ -174,6 +213,33 @@ public class LauEtAl {
 			return fallbacks;
 		}
 		
+	}
+	
+	
+	private static class LuceneHelper {
+		private IndexSearcher searcher;
+		public LuceneHelper(final String luceneDir) {
+			
+			try {
+				FSDirectory dir = FSDirectory.open(new File(luceneDir));
+				this.searcher = new IndexSearcher(IndexReader.open(dir));
+			} catch (CorruptIndexException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		public boolean isWikipediaArticleTitle(String s) {
+			TermQuery q = new TermQuery(new Term("label", s));
+			TopDocs result = null;
+			try {
+				result = searcher.search(q, 1);
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
+			return result.totalHits > 0;
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
