@@ -42,10 +42,10 @@ public class LauEtAl {
 		private final TopicWordIndex topicWordIdx;
 		private final AssociationMeasure<Label,Word> labelWordAssocMeas;
 	
-		public Labeler(String topicWordIdxDir, String linksIdxDir, String categoryCategoriesIdxDir, String chunkerPath,
+		public Labeler(String topicWordIdxDir, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
 				String posTaggerPath, AssociationMeasure<Label,Word> labelWordAssocMeas) throws IOException {
 			this.topicWordIdx = new TopicWordIndex(topicWordIdxDir);
-			this.raco = new RacoCalculator(linksIdxDir, categoryCategoriesIdxDir);
+			this.raco = new RacoCalculator(linksIdxDir, articleCategoriesIdxDir);
 			this.openNlp = new OpenNLPHelper(posTaggerPath, chunkerPath);
 			this.labelWordAssocMeas = labelWordAssocMeas;
 		}
@@ -145,14 +145,14 @@ public class LauEtAl {
 		final String idxBase = System.getenv("HOME") + "/Projects/eda_output/indices";
 		final String topicWordDir = idxBase + "/topic_words/wp_lucene3";
 		final String linksDir = idxBase + "/page_links";
-		final String catCatsDir = idxBase + "/category_categories";
+		final String artCatsDir = idxBase + "/article_categories";
 		
 		final String modelsBase = System.getenv("HOME") + "/Libraries/apache-opennlp-1.5.2-incubating/models";
 		final String chunkerPath = modelsBase + "/en-chunker.bin";
 		final String posTaggerPath = modelsBase + "/en-pos-maxent.bin";
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir);
-		Labeler l = new Labeler(topicWordDir, linksDir, catCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
+		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
 //		l.openNlp.npChunks("once upon a time in a magical little kingdom there was a tow truck");
 //		final String topic = "government republican states";
 		final String[] topicWords = {"government","republican","states"};
