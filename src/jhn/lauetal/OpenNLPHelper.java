@@ -3,6 +3,7 @@ package jhn.lauetal;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Set;
 
 import opennlp.tools.chunker.ChunkerME;
@@ -69,12 +70,31 @@ class OpenNLPHelper {
 		return chunker.chunk(sentence, posTags);
 	}
 	
-	public Set<String> chunks(String sentence) {
+	public Set<String> npChunks(String sentence) {
 		String[] sArr = sentence.split(" ");
 		String[] pos = posTag(sArr);
 		String[] chunkTags = chunk(sArr, pos);
 		
+		Set<String> npChunks = new HashSet<String>();
+		StringBuilder currentChunk = null;
+		for(int i = 0; i < chunkTags.length; i++) {
+			if(currentChunk != null) {
+				if(chunkTags[i].equals("I-NP")) {
+					currentChunk.append(' ').append(sArr[i]);
+				} else {
+					npChunks.add(currentChunk.toString());
+					currentChunk = null;
+				}
+			}
+			
+			if(chunkTags[i].equals("B-NP")) {
+				currentChunk = new StringBuilder(sArr[i]);
+			}
+		}
 		
-		return null;
+		if(currentChunk != null) {
+			npChunks.add(currentChunk.toString());
+		}
+		return npChunks;
 	}
 }

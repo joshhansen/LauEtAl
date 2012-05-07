@@ -1,11 +1,10 @@
 package jhn.lauetal;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import jhn.wp.Fields;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -13,14 +12,19 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
+
+import jhn.wp.Fields;
 
 public class RacoCalculator {
-	private IndexSearcher linksS;
-	private IndexSearcher categoriesS;
-	public RacoCalculator(IndexReader linksIndex, IndexReader categoriesIndex) {
-		this.linksS = new IndexSearcher(linksIndex);
-		this.categoriesS = new IndexSearcher(categoriesIndex);
+	private IndexSearcher links;
+	private IndexSearcher categoryCategories;
+	
+	public RacoCalculator(String linksIdxDir, String categoryCategoriesIdxDir) throws IOException {
+		links = new IndexSearcher(IndexReader.open(FSDirectory.open(new File(linksIdxDir))));
+		categoryCategories = new IndexSearcher(IndexReader.open(FSDirectory.open(new File(categoryCategoriesIdxDir))));
 	}
+	
 	public Set<String> minAvgRacoFilter(Set<String> primaryCandidates, Set<String> secondaryCandidates, final double minAvgRaco) throws IOException {
 		Set<String> passing = new HashSet<String>();
 		for(String secondaryCandidate : secondaryCandidates) {
@@ -60,19 +64,20 @@ public class RacoCalculator {
 	}
 	
 	private int docNum(String label) throws IOException {
-		TopDocs td = linksS.search(new TermQuery(new Term(Fields.label, label)), 1);
+		TopDocs td = links.search(new TermQuery(new Term(Fields.label, label)), 1);
 		return td.scoreDocs[0].doc;
 	}
 	
 	private Set<String> articlesLinkedTo(String fromArticle) throws IOException {
 		final int docNum = docNum(fromArticle);
-		TermFreqVector outlinks = linksS.getIndexReader().getTermFreqVector(docNum, Fields.outboundLinks);
+		TermFreqVector[] tfvs = links.getIndexReader().getTermFreqVectors(docNum);
+		TermFreqVector outlinks = links.getIndexReader().getTermFreqVector(docNum, Fields.linkedPage);// Fields.text);//FIXME Change to Fields.links
 		return new HashSet<String>(Arrays.asList(outlinks.getTerms()));
 	}
 	
 	private Set<String> categoriesContaining(String childArticle) throws IOException {
 		final int docNum = docNum(childArticle);
-		TermFreqVector categories = categoriesS.getIndexReader().getTermFreqVector(docNum, Fields.containingCategories);
+		TermFreqVector categories = categoryCategories.getIndexReader().getTermFreqVector(docNum, Fields.categoryCategory);
 		return new HashSet<String>(Arrays.asList(categories.getTerms()));
 	}
 }
