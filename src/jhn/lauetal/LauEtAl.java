@@ -131,7 +131,7 @@ public class LauEtAl {
 		private static Set<String> fallbackCandidates(String... topWords) {
 			Set<String> fallbacks = new HashSet<String>();
 			
-			for(int i = 0; i < Math.max(topWords.length, FALLBACK_SIZE); i++) {
+			for(int i = 0; i < Math.min(topWords.length, FALLBACK_SIZE); i++) {
 				fallbacks.add(topWords[i]);
 			}
 			
