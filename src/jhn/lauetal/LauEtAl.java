@@ -52,24 +52,27 @@ public class LauEtAl {
 		
 		public List<ScoredLabel> labelTopic(String... topWords) throws Exception {
 			Set<String> candidates = candidateLabels(topWords);
+			System.out.println("Candidate Labels: ");
+			for(String candidate : candidates) {
+				System.out.append('\t').append(candidate).append('\n');
+			}
 			List<ScoredLabel> rankedCandidates = rank(candidates, topWords);
 			return rankedCandidates;
 		}
 		
-		private double averageAssociation(String label, String... topWords) throws Exception {
-			double total = 0.0;
-			for(String w : topWords) {
-				total += labelWordAssocMeas.association(new Label(label), new Word(w));
-			}
-			
-			return total / (double)topWords.length;
-		}
-		
 		private List<ScoredLabel> rank(Set<String> labels, String... topWords) throws Exception {
+			System.out.println("Ranking label candidates...");
+			Word[] words = new Word[topWords.length];
+			for(int i = 0; i < topWords.length; i++) {
+				words[i] = new Word(topWords[i]);
+			}
 			List<ScoredLabel> scored = new ArrayList<ScoredLabel>();
 			
 			for(String label : labels) {
-				scored.add(new ScoredLabel(label, averageAssociation(label, topWords)));
+				Label l = new Label(label);
+				double assoc = labelWordAssocMeas.association(l, words);
+				System.out.println("\t" + label + ": " + assoc);
+				scored.add(new ScoredLabel(label, assoc));
 			}
 			
 			Collections.sort(scored, new Comparator<ScoredLabel>(){
@@ -143,7 +146,7 @@ public class LauEtAl {
 	
 	public static void main(String[] args) throws Exception {
 		final String idxBase = System.getenv("HOME") + "/Projects/eda_output/indices";
-		final String topicWordDir = idxBase + "/topic_words/wp_lucene3";
+		final String topicWordDir = idxBase + "/topic_words/wp_lucene4";
 		final String linksDir = idxBase + "/page_links";
 		final String artCatsDir = idxBase + "/article_categories";
 		
@@ -153,8 +156,7 @@ public class LauEtAl {
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir);
 		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
-//		l.openNlp.npChunks("once upon a time in a magical little kingdom there was a tow truck");
-//		final String topic = "government republican states";
+
 		final String[] topicWords = {"government","republican","states"};
 		List<ScoredLabel> labels = l.labelTopic(topicWords);
 		System.out.println("Labels for topic '" + topicWords + "':");
