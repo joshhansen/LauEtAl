@@ -14,7 +14,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class MediawikiAPI {
+public class MediawikiTitleSearcher implements TitleSearcher {
 	private static final String API_SCHEME = "http";
 	private static final String API_HOST = "en.wikipedia.org";
 	
@@ -44,7 +44,7 @@ public class MediawikiAPI {
 //		return topTitles(query.split(" "));
 //	}
 	
-	public static List<String> topTitles(String[] terms) throws IOException {
+	public List<String> topTitles(String... terms) throws IOException {
 		final StringBuilder url = new StringBuilder(API_BASE);
 		url.append("?action=query");
 		url.append("&list=search");

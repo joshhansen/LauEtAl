@@ -42,13 +42,15 @@ public class LauEtAl {
 		private final RacoCalculator raco;
 		private final TopicWordIndex topicWordIdx;
 		private final AssociationMeasure<Label,Word> labelWordAssocMeas;
+		private final TitleSearcher titleSearcher;
 	
 		public Labeler(String topicWordIdxDir, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
-				String posTaggerPath, AssociationMeasure<Label,Word> labelWordAssocMeas) throws IOException {
+				String posTaggerPath, AssociationMeasure<Label,Word> labelWordAssocMeas, TitleSearcher titleSearcher) throws IOException {
 			this.topicWordIdx = new TopicWordIndex(topicWordIdxDir);
 			this.raco = new RacoCalculator(linksIdxDir, articleCategoriesIdxDir);
 			this.openNlp = new OpenNLPHelper(posTaggerPath, chunkerPath);
 			this.labelWordAssocMeas = labelWordAssocMeas;
+			this.titleSearcher = titleSearcher;
 		}
 		
 		public List<ScoredLabel> labelTopic(String... topWords) throws Exception {
@@ -85,7 +87,7 @@ public class LauEtAl {
 			return scored;
 		}
 		
-		private Set<String> candidateLabels(String... topWords) throws IOException {
+		private Set<String> candidateLabels(String... topWords) throws Exception {
 			Set<String> primaryCandidates = primaryCandidates(topWords);
 			System.out.println("Primary Candidates:");
 			for(String primary : primaryCandidates) {
@@ -114,8 +116,8 @@ public class LauEtAl {
 			return candidateLabels;
 		}
 		
-		private Set<String> primaryCandidates(String... topWords) throws IOException {
-			return new HashSet<String>(MediawikiAPI.topTitles(topWords));
+		private Set<String> primaryCandidates(String... topWords) throws Exception {
+			return new HashSet<String>(titleSearcher.topTitles(topWords));
 		}
 		
 		private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws IOException {
@@ -171,7 +173,8 @@ public class LauEtAl {
 		final String posTaggerPath = modelsBase + "/en-pos-maxent.bin";
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir, Fields.text, 1000);
-		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
+		TitleSearcher ts = new MediawikiTitleSearcher();
+		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure, ts);
 
 //		final String topic = "government republican states";
 //		final String topic = "mazda maruts man ahura";
