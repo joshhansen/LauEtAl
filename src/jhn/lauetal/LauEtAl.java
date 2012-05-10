@@ -170,7 +170,7 @@ public class LauEtAl {
 		final String chunkerPath = modelsBase + "/en-chunker.bin";
 		final String posTaggerPath = modelsBase + "/en-pos-maxent.bin";
 		
-		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir);
+		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir, Fields.text, 1000);
 		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
 
 //		final String topic = "government republican states";
