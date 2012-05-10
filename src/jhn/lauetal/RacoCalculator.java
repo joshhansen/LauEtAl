@@ -77,7 +77,7 @@ public class RacoCalculator {
 			
 			return new HashSet<String>(Arrays.asList(linkedPages));
 		} catch(ArrayIndexOutOfBoundsException e) {
-			System.err.println(fromArticle);
+//			System.err.println(fromArticle);
 			return Collections.emptySet();
 		}
 	}
@@ -89,7 +89,7 @@ public class RacoCalculator {
 			String[] categoriesContaining = d.getValues(Fields.articleCategory);
 			return new HashSet<String>(Arrays.asList(categoriesContaining));
 		} catch(ArrayIndexOutOfBoundsException e) {
-			System.err.println(childArticle);
+//			System.err.println(childArticle);
 			return Collections.emptySet();
 		}
 	}

@@ -19,6 +19,7 @@ import jhn.assoc.AssociationMeasure;
 import jhn.assoc.Label;
 import jhn.assoc.PhraseWordProportionalPMI;
 import jhn.assoc.Word;
+import jhn.wp.Fields;
 
 
 
@@ -86,10 +87,25 @@ public class LauEtAl {
 		
 		private Set<String> candidateLabels(String... topWords) throws IOException {
 			Set<String> primaryCandidates = primaryCandidates(topWords);
-			System.out.println(primaryCandidates);
+			System.out.println("Primary Candidates:");
+			for(String primary : primaryCandidates) {
+				System.out.println("\t"+primary);
+			}
 			Set<String> rawSecondaryCandidates = rawSecondaryCandidates(primaryCandidates);
+			System.out.println("Raw Secondary Candidates:");
+			for(String rawSecondary : rawSecondaryCandidates) {
+				System.out.println("\t"+rawSecondary);
+			}
 			Set<String> secondaryCandidates = raco.minAvgRacoFilter(primaryCandidates, rawSecondaryCandidates, MIN_AVG_RACO);
+			System.out.println("Secondary Candidates:");
+			for(String secondary : secondaryCandidates) {
+				System.out.println("\t"+secondary);
+			}
 			Set<String> fallbackCandidates = fallbackCandidates(topWords);
+			System.out.println("Fallback Candidates:");
+			for(String fallback : fallbackCandidates) {
+				System.out.println("\t"+fallback);
+			}
 			
 			Set<String> candidateLabels = new HashSet<String>();
 			candidateLabels.addAll(primaryCandidates);
@@ -157,9 +173,14 @@ public class LauEtAl {
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir);
 		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure);
 
-		final String[] topicWords = {"government","republican","states"};
+//		final String topic = "government republican states";
+//		final String topic = "mazda maruts man ahura";
+//		final String topic = "california oregon pacific wealth believed";
+//		final String topic = "act territory convention American foreign";
+		final String topic = "Lord God people man earth";
+		final String[] topicWords = topic.split(" ");
 		List<ScoredLabel> labels = l.labelTopic(topicWords);
-		System.out.println("Labels for topic '" + topicWords + "':");
+		System.out.println("Labels for topic '" + topic + "':");
 		for(ScoredLabel sl : labels) {
 			System.out.print('\t');
 			System.out.print(sl.label);
