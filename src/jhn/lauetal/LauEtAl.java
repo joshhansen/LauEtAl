@@ -1,5 +1,6 @@
 package jhn.lauetal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -13,12 +14,17 @@ import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 
 import jhn.assoc.AssociationMeasure;
-import jhn.assoc.Label;
 import jhn.assoc.PhraseWordProportionalPMI;
-import jhn.assoc.Word;
+import jhn.lauetal.ts.LuceneTitleSearcher;
+import jhn.lauetal.ts.MediawikiTitleSearcher;
+import jhn.lauetal.ts.OrderedTitleSearcher;
+import jhn.lauetal.ts.TitleSearcher;
+import jhn.lauetal.ts.UnionTitleSearcher;
 import jhn.wp.Fields;
 
 
@@ -41,12 +47,12 @@ public class LauEtAl {
 		private final OpenNLPHelper openNlp;
 		private final RacoCalculator raco;
 		private final TopicWordIndex topicWordIdx;
-		private final AssociationMeasure<Label,Word> labelWordAssocMeas;
+		private final AssociationMeasure<String,String> labelWordAssocMeas;
 		private final TitleSearcher titleSearcher;
 	
-		public Labeler(String topicWordIdxDir, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
-				String posTaggerPath, AssociationMeasure<Label,Word> labelWordAssocMeas, TitleSearcher titleSearcher) throws IOException {
-			this.topicWordIdx = new TopicWordIndex(topicWordIdxDir);
+		public Labeler(IndexReader topicWordIdx, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
+				String posTaggerPath, AssociationMeasure<String,String> labelWordAssocMeas, TitleSearcher titleSearcher) throws IOException {
+			this.topicWordIdx = new TopicWordIndex(topicWordIdx);
 			this.raco = new RacoCalculator(linksIdxDir, articleCategoriesIdxDir);
 			this.openNlp = new OpenNLPHelper(posTaggerPath, chunkerPath);
 			this.labelWordAssocMeas = labelWordAssocMeas;
@@ -65,15 +71,10 @@ public class LauEtAl {
 		
 		private List<ScoredLabel> rank(Set<String> labels, String... topWords) throws Exception {
 			System.out.println("Ranking label candidates...");
-			Word[] words = new Word[topWords.length];
-			for(int i = 0; i < topWords.length; i++) {
-				words[i] = new Word(topWords[i]);
-			}
 			List<ScoredLabel> scored = new ArrayList<ScoredLabel>();
 			
 			for(String label : labels) {
-				Label l = new Label(label);
-				double assoc = labelWordAssocMeas.association(l, words);
+				double assoc = labelWordAssocMeas.association(label, topWords);
 				System.out.println("\t" + label + ": " + assoc);
 				scored.add(new ScoredLabel(label, assoc));
 			}
@@ -117,7 +118,7 @@ public class LauEtAl {
 		}
 		
 		private Set<String> primaryCandidates(String... topWords) throws Exception {
-			return new HashSet<String>(titleSearcher.topTitles(topWords));
+			return new HashSet<String>(titleSearcher.titles(topWords));
 		}
 		
 		private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws IOException {
@@ -172,9 +173,13 @@ public class LauEtAl {
 		final String chunkerPath = modelsBase + "/en-chunker.bin";
 		final String posTaggerPath = modelsBase + "/en-pos-maxent.bin";
 		
-		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir, Fields.text, 1000);
-		TitleSearcher ts = new MediawikiTitleSearcher();
-		Labeler l = new Labeler(topicWordDir, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<Label, Word>) assocMeasure, ts);
+		IndexReader topicWordIdx = IndexReader.open(NIOFSDirectory.open(new File(topicWordDir)));
+		
+		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx, Fields.text, 1000);
+		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher();
+		OrderedTitleSearcher ts2 = new LuceneTitleSearcher(topicWordIdx, 10);
+		TitleSearcher ts = new UnionTitleSearcher(10, ts1, ts2);
+		Labeler l = new Labeler(topicWordIdx, linksDir, artCatsDir, chunkerPath, posTaggerPath, (AssociationMeasure<String, String>) assocMeasure, ts);
 
 //		final String topic = "government republican states";
 //		final String topic = "mazda maruts man ahura";
@@ -191,6 +196,6 @@ public class LauEtAl {
 			System.out.println(sl.score);
 		}
 		
-		assocMeasure.close();
+		topicWordIdx.close();
 	}
 }

@@ -14,8 +14,13 @@ import jhn.wp.Fields;
 
 public class TopicWordIndex {
 	private final IndexSearcher searcher;
+	
+	public TopicWordIndex(IndexReader topicWordIdx) {
+		searcher = new IndexSearcher(topicWordIdx);
+	}
+	
 	public TopicWordIndex(final String luceneDir) throws IOException {
-		searcher = new IndexSearcher(IndexReader.open(FSDirectory.open(new File(luceneDir))));
+		this(IndexReader.open(FSDirectory.open(new File(luceneDir))));
 	}
 	
 	public boolean isWikipediaArticleTitle(String s) {

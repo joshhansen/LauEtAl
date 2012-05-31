@@ -1,4 +1,4 @@
-package jhn.lauetal;
+package jhn.lauetal.ts;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-public class MediawikiTitleSearcher implements TitleSearcher {
+public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 	private static final String API_BASE = "http://en.wikipedia.org/w/api.php";
 	private static String readURL(String urlS) throws IOException {
 		return readURL(new URL(urlS));
@@ -29,7 +29,7 @@ public class MediawikiTitleSearcher implements TitleSearcher {
 		return text.toString();
 	}
 	
-	public List<String> topTitles(String... terms) throws IOException {
+	public List<String> titles(String... terms) throws IOException {
 		final StringBuilder url = new StringBuilder(API_BASE);
 		url.append("?action=query");
 		url.append("&list=search");
