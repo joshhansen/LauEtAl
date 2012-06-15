@@ -1,0 +1,9 @@
+package jhn.lauetal;
+
+enum Options {
+	PROP_PMI_MAX_HITS,
+	LUCENE_TITLE_SEARCHER_TOP_N,
+	MIN_AVG_RACO,
+	NUM_FALLBACK_CANDIDATES,
+	TITLE_UNION_TOP_N
+}

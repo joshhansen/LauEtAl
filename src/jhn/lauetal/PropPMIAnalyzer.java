@@ -1,13 +1,20 @@
 package jhn.lauetal;
 
+import java.io.File;
+
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.NIOFSDirectory;
+
 import jhn.assoc.PhraseWordProportionalPMI;
 
 public class PropPMIAnalyzer {
 	public static void main(String[] args) throws Exception {
 		final String idxBase = System.getenv("HOME") + "/Projects/eda_output/indices";
-		final String topicWordDir = idxBase + "/topic_words/wp_lucene4";
+		final String topicWordIdxDir = idxBase + "/topic_words/wp_lucene4";
 		
-		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordDir);
+		IndexReader topicWordIdx = IndexReader.open(NIOFSDirectory.open(new File(topicWordIdxDir)));
+		
+		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx);
 		
 		
 		analyze(assocMeasure, "United States", new String[]{"government", "federal", "budget"});
@@ -16,7 +23,7 @@ public class PropPMIAnalyzer {
 		analyze(assocMeasure, "Dog", new String[]{"mars"});
 		analyze(assocMeasure, "Dog", new String[]{"phonation"});
 		
-		assocMeasure.close();
+		topicWordIdx.close();
 	}
 
 	private static void analyze(PhraseWordProportionalPMI assocMeasure, String label, String[] words) throws Exception {
