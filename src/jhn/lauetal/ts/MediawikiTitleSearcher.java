@@ -35,6 +35,7 @@ public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 		return text.toString();
 	}
 	
+	@Override
 	public List<String> titles(String... terms) throws IOException {
 		final StringBuilder url = new StringBuilder(API_BASE);
 		url.append("?action=query");
@@ -52,7 +53,7 @@ public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 		final String jsonS = readURL(url.toString());
 		
 		
-		List<String> titles = new ArrayList<String>();
+		List<String> titles = new ArrayList<>();
 		JSONObject json = (JSONObject) JSONValue.parse(jsonS);
 		JSONObject query = (JSONObject) json.get("query");
 		JSONArray search = (JSONArray) query.get("search");

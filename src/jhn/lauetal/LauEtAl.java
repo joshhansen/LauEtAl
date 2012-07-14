@@ -17,7 +17,7 @@ import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
 import jhn.assoc.AssociationMeasure;
@@ -78,6 +78,7 @@ public class LauEtAl {
 	
 	
 	private static final Comparator<ScoredLabel> labelCmp = new Comparator<ScoredLabel>(){
+		@Override
 		public int compare(ScoredLabel o1, ScoredLabel o2) {
 			return Double.compare(o2.score, o1.score);
 		}
@@ -121,7 +122,7 @@ public class LauEtAl {
 			log.println("\t"+fallback);
 		}
 		
-		Set<String> candidateLabels = new HashSet<String>();
+		Set<String> candidateLabels = new HashSet<>();
 		candidateLabels.addAll(primaryCandidates);
 		candidateLabels.addAll(secondaryCandidates);
 		candidateLabels.addAll(fallbackCandidates);
@@ -129,7 +130,7 @@ public class LauEtAl {
 	}
 	
 	private Set<String> primaryCandidates(String... topWords) throws Exception {
-		Set<String> candidates = new HashSet<String>();
+		Set<String> candidates = new HashSet<>();
 		for(String title : titleSearcher.titles(topWords)) {
 			if(topicWordIdx.isWikipediaArticleTitle(title)) {
 				candidates.add(title);
@@ -139,7 +140,7 @@ public class LauEtAl {
 	}
 	
 	private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws IOException {
-		Set<String> secondaryCandidates = new HashSet<String>();
+		Set<String> secondaryCandidates = new HashSet<>();
 		for(String primaryCandidate : primaryCandidates) {
 			for(String chunk : openNlp.npChunks(primaryCandidate)) {
 				for(String ngram : componentNgrams(chunk)) {
@@ -157,7 +158,7 @@ public class LauEtAl {
 		
 		ShingleFilter sf = new ShingleFilter(tok);
 		
-		Set<String> ngrams = new HashSet<String>();
+		Set<String> ngrams = new HashSet<>();
 		CharTermAttribute token;
 		while(sf.incrementToken()) {
 			token = sf.getAttribute(CharTermAttribute.class);
@@ -168,7 +169,7 @@ public class LauEtAl {
 	}
 	
 	private Set<String> fallbackCandidates(String... topWords) {
-		Set<String> fallbacks = new HashSet<String>();
+		Set<String> fallbacks = new HashSet<>();
 		
 		for(int i = 0; i < Math.min(topWords.length, conf.getInt(Options.NUM_FALLBACK_CANDIDATES)); i++) {
 			fallbacks.add(topWords[i]);
@@ -236,7 +237,7 @@ public class LauEtAl {
 		log.println(conf);
 		
 		
-		IndexReader topicWordIdx = IndexReader.open(NIOFSDirectory.open(new File(topicWordDir)));
+		IndexReader topicWordIdx = IndexReader.open(FSDirectory.open(new File(topicWordDir)));
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx, Fields.text, conf.getInt(Options.PROP_PMI_MAX_HITS));
 		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
@@ -244,7 +245,7 @@ public class LauEtAl {
 		OrderedTitleSearcher ts3 = new GoogleTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
 		
 		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2, ts3);
-		LauEtAl l = new LauEtAl(conf, log, topicWordIdx, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), (AssociationMeasure<String, String>) assocMeasure, ts);
+		LauEtAl l = new LauEtAl(conf, log, topicWordIdx, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts);
 
 //		String keysFilename = Paths.projectDir() + "/datasets/reuters-keys.txt";
 		String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);

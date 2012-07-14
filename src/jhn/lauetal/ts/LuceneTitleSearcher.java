@@ -14,7 +14,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
 import jhn.wp.Fields;
@@ -27,10 +27,10 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 	private final int n;
 	
 	public LuceneTitleSearcher(String topicWordIdxDir, int topN) throws CorruptIndexException, IOException {
-		this(IndexReader.open(NIOFSDirectory.open(new File(topicWordIdxDir))), topN);
+		this(IndexReader.open(FSDirectory.open(new File(topicWordIdxDir))), topN);
 	}
 	
-	public LuceneTitleSearcher(IndexReader topicWordIdx, int topN) throws CorruptIndexException, IOException {
+	public LuceneTitleSearcher(IndexReader topicWordIdx, int topN) {
 		s = new IndexSearcher(topicWordIdx);
 		
 		Analyzer a = new StandardAnalyzer(luceneVersion);
@@ -42,6 +42,7 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 	
 	
 	//FIXME Learn to do without the QueryParser instance
+	@Override
 	public List<String> titles(String... terms) throws Exception {
 		StringBuilder searchString = new StringBuilder();
 		for(String term : terms) {
@@ -51,7 +52,7 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 		Query q = qp.parse(searchString.toString());
 		
 		TopDocs tds = s.search(q, n);
-		List<String> titles = new ArrayList<String>();
+		List<String> titles = new ArrayList<>();
 		for(ScoreDoc sd : tds.scoreDocs) {
 			titles.add(s.doc(sd.doc).get(Fields.label));
 		}

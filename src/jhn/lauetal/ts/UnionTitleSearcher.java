@@ -12,8 +12,9 @@ public class UnionTitleSearcher implements TitleSearcher {
 		this.searchers = searchers;
 	}
 	
+	@Override
 	public Set<String> titles(String... terms) throws Exception {
-		Set<String> titles = new HashSet<String>();
+		Set<String> titles = new HashSet<>();
 		
 		for(OrderedTitleSearcher ts : searchers) {
 			List<String> subTitles = ts.titles(terms);

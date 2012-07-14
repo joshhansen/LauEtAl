@@ -3,7 +3,7 @@ package jhn.lauetal;
 import java.io.File;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.FSDirectory;
 
 import jhn.assoc.PhraseWordProportionalPMI;
 
@@ -12,7 +12,7 @@ public class PropPMIAnalyzer {
 		final String idxBase = System.getenv("HOME") + "/Projects/eda_output/indices";
 		final String topicWordIdxDir = idxBase + "/topic_words/wp_lucene4";
 		
-		IndexReader topicWordIdx = IndexReader.open(NIOFSDirectory.open(new File(topicWordIdxDir)));
+		IndexReader topicWordIdx = IndexReader.open(FSDirectory.open(new File(topicWordIdxDir)));
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx);
 		

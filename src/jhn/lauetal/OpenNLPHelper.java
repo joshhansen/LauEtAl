@@ -56,6 +56,7 @@ class OpenNLPHelper {
 				try {
 					modelIn.close();
 				} catch (IOException e) {
+					// Do nothing
 				}
 			}
 		}
@@ -75,7 +76,7 @@ class OpenNLPHelper {
 		String[] pos = posTag(sArr);
 		String[] chunkTags = chunk(sArr, pos);
 		
-		Set<String> npChunks = new HashSet<String>();
+		Set<String> npChunks = new HashSet<>();
 		StringBuilder currentChunk = null;
 		for(int i = 0; i < chunkTags.length; i++) {
 			if(currentChunk != null) {

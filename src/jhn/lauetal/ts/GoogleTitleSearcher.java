@@ -36,10 +36,10 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 	    Reader reader = new InputStreamReader(url.openStream(), CHARSET);
 	    GoogleResults results = new Gson().fromJson(reader, GoogleResults.class);
 	    
-	    List<String> titles = new ArrayList<String>();
+	    List<String> titles = new ArrayList<>();
 	    
-	    for(Result result : results.responseData.results) {
-	    	titles.add(cleanTitle(result.titleNoFormatting));
+	    for(Result result : results.getResponseData().getResults()) {
+	    	titles.add(cleanTitle(result.getTitleNoFormatting()));
 	    }
 	    
 	    return titles;
@@ -57,10 +57,12 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 			return responseData;
 		}
 
+		@SuppressWarnings("unused")
 		public void setResponseData(ResponseData responseData) {
 			this.responseData = responseData;
 		}
 
+		@Override
 		public String toString() {
 			return "ResponseData[" + responseData + "]";
 		}
@@ -73,10 +75,12 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 			return results;
 		}
 
+		@SuppressWarnings("unused")
 		public void setResults(List<Result> results) {
 			this.results = results;
 		}
 
+		@Override
 		public String toString() {
 			return "Results[" + results + "]";
 		}
@@ -95,20 +99,28 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 			return title;
 		}
 
+		@SuppressWarnings("unused")
 		public void setUrl(String url) {
 			this.url = url;
 		}
 
+		@SuppressWarnings("unused")
 		public void setTitle(String title) {
 			this.title = title;
 		}
 		
+		@SuppressWarnings("unused")
 		public void setTitleNoFormatting(String titleNoFormatting) {
 			this.titleNoFormatting = titleNoFormatting;
 		}
 
+		@Override
 		public String toString() {
 			return "Result[url:" + url + ",title:" + title + "]";
+		}
+
+		public String getTitleNoFormatting() {
+			return titleNoFormatting;
 		}
 	}
 }

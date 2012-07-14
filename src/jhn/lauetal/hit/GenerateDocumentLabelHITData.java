@@ -11,7 +11,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 public class GenerateDocumentLabelHITData {
 	
 	private static Int2ObjectMap<String> loadLabels(String topicLabelsFilename) throws Exception {
-		Int2ObjectMap<String> labels = new Int2ObjectOpenHashMap<String>();
+		Int2ObjectMap<String> labels = new Int2ObjectOpenHashMap<>();
 		
 		BufferedReader r = new BufferedReader(new FileReader(topicLabelsFilename));
 		

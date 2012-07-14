@@ -27,13 +27,13 @@ public class RacoCalculator {
 	}
 	
 	public Set<String> minAvgRacoFilter(Set<String> primaryCandidates, Set<String> secondaryCandidates, final double minAvgRaco) throws IOException {
-		Set<String> passing = new HashSet<String>();
+		Set<String> passing = new HashSet<>();
 		for(String secondaryCandidate : secondaryCandidates) {
 			double sum = 0.0;
 			for(String primaryCandidate : primaryCandidates) {
 				sum += raco(primaryCandidate, secondaryCandidate);
 			}
-			double avgRaco = sum / (double) primaryCandidates.size();
+			double avgRaco = sum / primaryCandidates.size();
 			if(avgRaco >= minAvgRaco) {
 				passing.add(secondaryCandidate);
 			}
@@ -57,14 +57,14 @@ public class RacoCalculator {
 	}
 	
 	private Set<String> relatedArticleCategories(String relatedToArticle) throws IOException {
-		final Set<String> racs = new HashSet<String>();
+		final Set<String> racs = new HashSet<>();
 		for(String relatedArticle : articlesLinkedTo(relatedToArticle)) {
 			racs.addAll(categoriesContaining(relatedArticle));
 		}
 		return racs;
 	}
 	
-	private int docNum(String label, IndexSearcher s) throws IOException {
+	private static int docNum(String label, IndexSearcher s) throws IOException {
 		TopDocs td = s.search(new TermQuery(new Term(Fields.label, label.replace(' ', '_'))), 1);
 		return td.scoreDocs[0].doc;
 	}
@@ -75,7 +75,7 @@ public class RacoCalculator {
 			Document d = links.doc(docNum);
 			String[] linkedPages = d.getValues(Fields.linkedPage);
 			
-			return new HashSet<String>(Arrays.asList(linkedPages));
+			return new HashSet<>(Arrays.asList(linkedPages));
 		} catch(ArrayIndexOutOfBoundsException e) {
 //			System.err.println(fromArticle);
 			return Collections.emptySet();
@@ -87,7 +87,7 @@ public class RacoCalculator {
 			final int docNum = docNum(childArticle, articleCategories);
 			Document d = articleCategories.doc(docNum);
 			String[] categoriesContaining = d.getValues(Fields.articleCategory);
-			return new HashSet<String>(Arrays.asList(categoriesContaining));
+			return new HashSet<>(Arrays.asList(categoriesContaining));
 		} catch(ArrayIndexOutOfBoundsException e) {
 //			System.err.println(childArticle);
 			return Collections.emptySet();
