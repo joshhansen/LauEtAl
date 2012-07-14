@@ -1,7 +1,11 @@
 package jhn.lauetal;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,6 +22,7 @@ import org.apache.lucene.util.Version;
 
 import jhn.assoc.AssociationMeasure;
 import jhn.assoc.PhraseWordProportionalPMI;
+import jhn.lauetal.ts.GoogleTitleSearcher;
 import jhn.lauetal.ts.LuceneTitleSearcher;
 import jhn.lauetal.ts.MediawikiTitleSearcher;
 import jhn.lauetal.ts.OrderedTitleSearcher;
@@ -25,6 +30,7 @@ import jhn.lauetal.ts.TitleSearcher;
 import jhn.lauetal.ts.UnionTitleSearcher;
 import jhn.util.Config;
 import jhn.util.Log;
+import jhn.util.RandUtil;
 import jhn.wp.Fields;
 
 
@@ -123,7 +129,13 @@ public class LauEtAl {
 	}
 	
 	private Set<String> primaryCandidates(String... topWords) throws Exception {
-		return new HashSet<String>(titleSearcher.titles(topWords));
+		Set<String> candidates = new HashSet<String>();
+		for(String title : titleSearcher.titles(topWords)) {
+			if(topicWordIdx.isWikipediaArticleTitle(title)) {
+				candidates.add(title);
+			}
+		}
+		return candidates;
 	}
 	
 	private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws IOException {
@@ -165,6 +177,45 @@ public class LauEtAl {
 		return fallbacks;
 	}
 	
+	private static final boolean SPOOFED_DELAY = true;
+	public void labelAllTopics(String topicKeysFilename, String outputFilename) throws Exception {
+		BufferedReader r = new BufferedReader(new FileReader(topicKeysFilename));
+		PrintWriter w = new PrintWriter(new FileWriter(outputFilename), true);
+		
+		String[] parts;
+		String[] topicWords;
+		ScoredLabel[] labels;
+		String tmp = null;
+		int topicNum;
+		while( (tmp=r.readLine()) != null) {
+			log.println(tmp);
+			parts = tmp.split("\\s+");
+			
+			topicNum = Integer.parseInt(parts[0]);
+			
+			topicWords = new String[parts.length - 2];
+			for(int i = 2; i < parts.length; i++) {
+				topicWords[i-2] = parts[i];
+			}
+			labels = labelTopic(topicWords);
+			w.print(topicNum);
+			for(String word : topicWords) {
+				w.print(',');
+				w.print(word);
+			}
+			w.print(",\"");
+			w.print(labels[0].label);
+			w.println("\"");
+			
+			final int base = 60 + RandUtil.rand.nextInt(60);
+			if(SPOOFED_DELAY) {
+				int seconds = base + RandUtil.rand.nextInt(60);
+				Thread.sleep(seconds*1000);
+			}
+		}
+		w.close();
+		r.close();
+	}
 	
 	public static void main(String[] args) throws Exception {
 		final String topicWordDir = jhn.eda.Paths.topicWordIndexDir("wp_lucene4");
@@ -173,12 +224,14 @@ public class LauEtAl {
 		
 		Config conf = new Config();
 		conf.putInt(Options.PROP_PMI_MAX_HITS, 1000);
-		conf.putInt(Options.LUCENE_TITLE_SEARCHER_TOP_N, 10);
+		conf.putInt(Options.TITLE_SEARCHER_TOP_N, 10);
 		conf.putDouble(Options.MIN_AVG_RACO, 0.1);
 		conf.putInt(Options.NUM_FALLBACK_CANDIDATES, 5);
 		conf.putInt(Options.TITLE_UNION_TOP_N, 10);
 		
-		Log log = new Log(System.out, Paths.logFilename());
+		final int run = jhn.Paths.nextRun(Paths.runsDir());
+		new File(Paths.runDir(run)).mkdirs();
+		Log log = new Log(System.out, Paths.logFilename(run));
 		log.println("Lau, et al. configuration:");
 		log.println(conf);
 		
@@ -186,25 +239,33 @@ public class LauEtAl {
 		IndexReader topicWordIdx = IndexReader.open(NIOFSDirectory.open(new File(topicWordDir)));
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx, Fields.text, conf.getInt(Options.PROP_PMI_MAX_HITS));
-		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher();
-		OrderedTitleSearcher ts2 = new LuceneTitleSearcher(topicWordIdx, conf.getInt(Options.LUCENE_TITLE_SEARCHER_TOP_N));
-		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2);
+		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
+		OrderedTitleSearcher ts2 = new LuceneTitleSearcher(topicWordIdx, conf.getInt(Options.TITLE_SEARCHER_TOP_N));
+		OrderedTitleSearcher ts3 = new GoogleTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
+		
+		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2, ts3);
 		LauEtAl l = new LauEtAl(conf, log, topicWordIdx, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), (AssociationMeasure<String, String>) assocMeasure, ts);
 
-//		final String topic = "government republican states";
-//		final String topic = "mazda maruts man ahura";
-//		final String topic = "california oregon pacific wealth believed";
-//		final String topic = "act territory convention American foreign";
-		final String topic = "Lord God people man earth";
-		final String[] topicWords = topic.split(" ");
-		ScoredLabel[] labels = l.labelTopic(topicWords);
-		log.println("Labels for topic '" + topic + "':");
-		for(ScoredLabel sl : labels) {
-			log.print('\t');
-			log.print(sl.label);
-			log.print(": ");
-			log.println(sl.score);
-		}
+//		String keysFilename = Paths.projectDir() + "/datasets/reuters-keys.txt";
+		String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);
+//		String topicLabelsFilename = Paths.outputDir() + "/reuters-labels.txt";
+		String topicLabelsFilename = Paths.topicLabelsFilename(run) + "_2";
+		l.labelAllTopics(keysFilename, topicLabelsFilename);
+		
+////		final String topic = "government republican states";
+////		final String topic = "mazda maruts man ahura";
+////		final String topic = "california oregon pacific wealth believed";
+////		final String topic = "act territory convention American foreign";
+//		final String topic = "Lord God people man earth";
+//		final String[] topicWords = topic.split(" ");
+//		ScoredLabel[] labels = l.labelTopic(topicWords);
+//		log.println("Labels for topic '" + topic + "':");
+//		for(ScoredLabel sl : labels) {
+//			log.print('\t');
+//			log.print(sl.label);
+//			log.print(": ");
+//			log.println(sl.score);
+//		}
 		
 		topicWordIdx.close();
 	}

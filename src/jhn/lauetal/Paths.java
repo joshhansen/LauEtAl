@@ -1,15 +1,30 @@
 package jhn.lauetal;
 
-
+/**
+ * Don't-Repeat-Yourself paths for Lau, et al.
+ *
+ */
 public final class Paths {
 	private Paths() {}
 	
+	public static String projectDir() {
+		return System.getenv("HOME") + "/Projects/LauEtAl";
+	}
+	
 	public static String outputDir() {
-		return System.getenv("HOME") + "/Projects/Output/LauEtAl";
+		return jhn.Paths.outputDir("LauEtAl");
 	}
 	
 	public static String runsDir() {
 		return outputDir() + "/runs";
+	}
+	
+	public static String runDir(int run) {
+		return runsDir() + "/" + run;
+	}
+	
+	public static String logFilename(int run) {
+		return runDir(run) + "/main.log";
 	}
 	
 	public static String modelsBase() {
@@ -24,11 +39,16 @@ public final class Paths {
 		return modelsBase() + "/en-pos-maxent.bin";
 	}
 	
-	public static String logFilename() {
-		final String logDir = runsDir();
-		String filename = logDir + "/" + String.valueOf(jhn.eda.Paths.nextLogNum(logDir));
-		System.out.println("Writing to log file: " + filename);
-		return filename;
+	public static String nextRunDir() {
+		return runDir(jhn.Paths.nextRun(runsDir()));
+	}
+	
+	public static String documentLabelHitDataFilename(int run) {
+		return runDir(run) + "/document_label_hit_data.csv";
+	}
+	
+	public static String topicLabelsFilename(int run) {
+		return runDir(run) + "/topic_labels.csv";
 	}
 
 }
