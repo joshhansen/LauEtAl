@@ -13,6 +13,12 @@ import org.json.simple.JSONValue;
 
 public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 	private static final String API_BASE = "http://en.wikipedia.org/w/api.php";
+	
+	private final int maxTerms;
+	public MediawikiTitleSearcher(int maxTerms) {
+		this.maxTerms = maxTerms;
+	}
+
 	private static String readURL(String urlS) throws IOException {
 		return readURL(new URL(urlS));
 	}
@@ -35,7 +41,7 @@ public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 		url.append("&list=search");
 		url.append("&format=json");
 		url.append("&srsearch=");
-		for(int i = 0; i < terms.length; i++) {
+		for(int i = 0; i < Math.min(terms.length, maxTerms); i++) {
 			if(i > 0) {
 				url.append("+");
 			}
