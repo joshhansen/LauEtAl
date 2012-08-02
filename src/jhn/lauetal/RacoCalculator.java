@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -27,11 +29,21 @@ public class RacoCalculator {
 	}
 	
 	public Set<String> minAvgRacoFilter(Set<String> primaryCandidates, Set<String> secondaryCandidates, final double minAvgRaco) throws IOException {
+		Map<String,Set<String>> relatedArticleCategories = new HashMap<>();
+		for(String primaryCandidate : primaryCandidates) {
+			relatedArticleCategories.put(primaryCandidate, relatedArticleCategories(primaryCandidate));
+		}
+		for(String secondaryCandidate : secondaryCandidates) {
+			relatedArticleCategories.put(secondaryCandidate, relatedArticleCategories(secondaryCandidate));
+		}
+		
+		
 		Set<String> passing = new HashSet<>();
 		for(String secondaryCandidate : secondaryCandidates) {
 			double sum = 0.0;
 			for(String primaryCandidate : primaryCandidates) {
-				sum += raco(primaryCandidate, secondaryCandidate);
+				sum += raco(relatedArticleCategories.get(primaryCandidate),
+						    relatedArticleCategories.get(secondaryCandidate));
 			}
 			double avgRaco = sum / primaryCandidates.size();
 			if(avgRaco >= minAvgRaco) {
@@ -45,6 +57,10 @@ public class RacoCalculator {
 	public double raco(String label1, String label2) throws IOException {
 		final Set<String> relatedArticleCategories1 = relatedArticleCategories(label1);
 		final Set<String> relatedArticleCategories2 = relatedArticleCategories(label2);
+		return raco(relatedArticleCategories1, relatedArticleCategories2);
+	}
+	
+	public static double raco(Set<String> relatedArticleCategories1, Set<String> relatedArticleCategories2) {
 		final double size1 = relatedArticleCategories1.size();
 		final double size2 = relatedArticleCategories2.size();
 		
