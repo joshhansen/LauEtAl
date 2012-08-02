@@ -1,6 +1,6 @@
 package jhn.lauetal;
 
-enum Options {
+public enum Options {
 	PROP_PMI_MAX_HITS,
 	TITLE_SEARCHER_TOP_N,
 	MIN_AVG_RACO,
