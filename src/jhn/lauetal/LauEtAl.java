@@ -173,11 +173,24 @@ public class LauEtAl implements AutoCloseable {
 		return ngrams;
 	}
 	
-	private Set<String> fallbackCandidates(String... topWords) {
+	private Set<String> fallbackCandidates(String... topWords) throws Exception {
 		Set<String> fallbacks = new HashSet<>();
 		
-		for(int i = 0; i < Math.min(topWords.length, conf.getInt(Options.NUM_FALLBACK_CANDIDATES)); i++) {
-			fallbacks.add(topWords[i]);
+		int numAdded = 0;
+		for(String word : topWords) {
+			if(numAdded >= conf.getInt(Options.NUM_FALLBACK_CANDIDATES)) {
+				break;
+			}
+			
+			//Uppercase first letter:
+			word = word.substring(0, 1).toUpperCase() + word.substring(1);
+			
+			if(titleChecker.isWikipediaArticleTitle(word)) {
+				fallbacks.add(word);
+				numAdded++;
+			} else {
+				System.err.println("Did not add '" + word + "'");
+			}
 		}
 		
 		return fallbacks;
