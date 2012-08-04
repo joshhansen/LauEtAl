@@ -24,15 +24,15 @@ public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 	}
 	
 	private static String readURL(URL url) throws IOException {
-		BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()));
-		
-		StringBuilder text = new StringBuilder();
-		String tmp = null;
-		while( (tmp=r.readLine()) != null) {
-			text.append(tmp);
-			text.append('\n');
+		try(BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()))) {
+			StringBuilder text = new StringBuilder();
+			String tmp = null;
+			while( (tmp=r.readLine()) != null) {
+				text.append(tmp);
+				text.append('\n');
+			}
+			return text.toString();
 		}
-		return text.toString();
 	}
 	
 	@Override
