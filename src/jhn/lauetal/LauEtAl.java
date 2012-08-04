@@ -96,7 +96,6 @@ public class LauEtAl implements AutoCloseable {
 		int idx = 0;
 		for(String label : labels) {
 			double assoc = labelWordAssocMeas.association(label, topWords);
-			log.println("\t" + label + ": " + assoc);
 			scored[idx++] = new ScoredLabel(label, assoc);
 		}
 		
@@ -167,7 +166,6 @@ public class LauEtAl implements AutoCloseable {
 		CharTermAttribute token;
 		while(sf.incrementToken()) {
 			token = sf.getAttribute(CharTermAttribute.class);
-			log.println(token);
 			ngrams.add(token.toString());
 		}
 		return ngrams;
