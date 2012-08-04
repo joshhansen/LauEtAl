@@ -22,6 +22,10 @@ import org.apache.lucene.util.Version;
 
 import jhn.assoc.AssociationMeasure;
 import jhn.assoc.PhraseWordProportionalPMI;
+import jhn.lauetal.tc.HTTPTitleChecker;
+import jhn.lauetal.tc.OrderedTitleChecker;
+import jhn.lauetal.tc.TitleChecker;
+import jhn.lauetal.tc.LuceneTitleChecker;
 import jhn.lauetal.ts.GoogleTitleSearcher;
 import jhn.lauetal.ts.LuceneTitleSearcher;
 import jhn.lauetal.ts.MediawikiTitleSearcher;
@@ -51,19 +55,19 @@ public class LauEtAl {
 	private final Log log;
 	private final OpenNLPHelper openNlp;
 	private final RacoCalculator raco;
-	private final TopicWordIndex topicWordIdx;
+	private final TitleChecker titleChecker;
 	private final AssociationMeasure<String,String> labelWordAssocMeas;
 	private final TitleSearcher titleSearcher;
 
-	public LauEtAl(Config conf, Log log, IndexReader topicWordIdx, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
-			String posTaggerPath, AssociationMeasure<String,String> labelWordAssocMeas, TitleSearcher titleSearcher) throws IOException {
+	public LauEtAl(Config conf, Log log, String linksIdxDir, String articleCategoriesIdxDir, String chunkerPath,
+			String posTaggerPath, AssociationMeasure<String,String> labelWordAssocMeas, TitleSearcher titleSearcher, TitleChecker titleChecker) throws IOException {
 		this.conf = conf;
 		this.log = log;
-		this.topicWordIdx = new TopicWordIndex(topicWordIdx);
 		this.raco = new RacoCalculator(linksIdxDir, articleCategoriesIdxDir);
 		this.openNlp = new OpenNLPHelper(posTaggerPath, chunkerPath);
 		this.labelWordAssocMeas = labelWordAssocMeas;
 		this.titleSearcher = titleSearcher;
+		this.titleChecker = titleChecker;
 	}
 	
 	public ScoredLabel[] labelTopic(String... topWords) throws Exception {
@@ -132,19 +136,19 @@ public class LauEtAl {
 	private Set<String> primaryCandidates(String... topWords) throws Exception {
 		Set<String> candidates = new HashSet<>();
 		for(String title : titleSearcher.titles(topWords)) {
-			if(topicWordIdx.isWikipediaArticleTitle(title)) {
+			if(titleChecker.isWikipediaArticleTitle(title)) {
 				candidates.add(title);
 			}
 		}
 		return candidates;
 	}
 	
-	private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws IOException {
+	private Set<String> rawSecondaryCandidates(Set<String> primaryCandidates) throws Exception {
 		Set<String> secondaryCandidates = new HashSet<>();
 		for(String primaryCandidate : primaryCandidates) {
 			for(String chunk : openNlp.npChunks(primaryCandidate)) {
 				for(String ngram : componentNgrams(chunk)) {
-					if(topicWordIdx.isWikipediaArticleTitle(ngram)) {
+					if(titleChecker.isWikipediaArticleTitle(ngram)) {
 						secondaryCandidates.add(ngram);
 					}
 				}
@@ -153,7 +157,7 @@ public class LauEtAl {
 		return secondaryCandidates;
 	}
 	
-	private Set<String> componentNgrams(String s) throws IOException {
+	private static Set<String> componentNgrams(String s) throws IOException {
 		Tokenizer tok = new StandardTokenizer(luceneVersion, new StringReader(s));
 		
 		ShingleFilter sf = new ShingleFilter(tok);
@@ -238,6 +242,7 @@ public class LauEtAl {
 		
 		
 		IndexReader topicWordIdx = IndexReader.open(FSDirectory.open(new File(topicWordDir)));
+		IndexReader titleIdx = IndexReader.open(FSDirectory.open(new File(jhn.Paths.titleIndexDir())));
 		
 		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx, Fields.text, conf.getInt(Options.PROP_PMI_MAX_HITS));
 		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
@@ -245,7 +250,8 @@ public class LauEtAl {
 		OrderedTitleSearcher ts3 = new GoogleTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
 		
 		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2, ts3);
-		LauEtAl l = new LauEtAl(conf, log, topicWordIdx, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts);
+		TitleChecker tc = new OrderedTitleChecker(new LuceneTitleChecker(titleIdx), new HTTPTitleChecker());
+		LauEtAl l = new LauEtAl(conf, log, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts, tc);
 
 //		String keysFilename = Paths.projectDir() + "/datasets/reuters-keys.txt";
 		String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);

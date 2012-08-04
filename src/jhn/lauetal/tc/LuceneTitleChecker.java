@@ -1,4 +1,4 @@
-package jhn.lauetal;
+package jhn.lauetal.tc;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,17 +12,20 @@ import org.apache.lucene.store.FSDirectory;
 
 import jhn.wp.Fields;
 
-public class TopicWordIndex {
+public class LuceneTitleChecker implements TitleChecker, AutoCloseable {
+	private final IndexReader reader;
 	private final IndexSearcher searcher;
 	
-	public TopicWordIndex(IndexReader topicWordIdx) {
+	public LuceneTitleChecker(IndexReader topicWordIdx) {
+		this.reader = topicWordIdx;
 		searcher = new IndexSearcher(topicWordIdx);
 	}
 	
-	public TopicWordIndex(final String luceneDir) throws IOException {
+	public LuceneTitleChecker(final String luceneDir) throws IOException {
 		this(IndexReader.open(FSDirectory.open(new File(luceneDir))));
 	}
 	
+	@Override
 	public boolean isWikipediaArticleTitle(String s) {
 		TermQuery q = new TermQuery(new Term(Fields.label, s));
 		
@@ -34,5 +37,11 @@ public class TopicWordIndex {
 		}
 		
 		throw new IllegalArgumentException();
+	}
+
+	@Override
+	public void close() throws Exception {
+		reader.close();
+		searcher.close();
 	}
 }
