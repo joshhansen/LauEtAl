@@ -90,7 +90,6 @@ public class LauEtAl implements AutoCloseable {
 	};
 	private ScoredLabel[] rank(Set<String> labels, String... topWords) throws Exception {
 		log.println("Ranking label candidates...");
-//		List<ScoredLabel> scored = new ArrayList<ScoredLabel>();
 		ScoredLabel[] scored = new ScoredLabel[labels.size()];
 		
 		int idx = 0;
