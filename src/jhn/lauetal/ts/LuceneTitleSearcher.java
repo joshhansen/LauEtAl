@@ -19,9 +19,10 @@ import org.apache.lucene.util.Version;
 
 import jhn.wp.Fields;
 
-public class LuceneTitleSearcher implements OrderedTitleSearcher {
+public class LuceneTitleSearcher implements OrderedTitleSearcher, AutoCloseable {
 	private static final Version luceneVersion = Version.LUCENE_36;
 	
+	private IndexReader r;
 	private IndexSearcher s;
 	private QueryParser qp;
 	private final int n;
@@ -31,6 +32,7 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 	}
 	
 	public LuceneTitleSearcher(IndexReader topicWordIdx, int topN) {
+		this.r = topicWordIdx;
 		s = new IndexSearcher(topicWordIdx);
 		
 		Analyzer a = new StandardAnalyzer(luceneVersion);
@@ -38,8 +40,6 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 		
 		this.n = topN;
 	}
-	
-	
 	
 	//FIXME Learn to do without the QueryParser instance
 	@Override
@@ -58,6 +58,12 @@ public class LuceneTitleSearcher implements OrderedTitleSearcher {
 		}
 		
 		return titles;
+	}
+
+	@Override
+	public void close() throws Exception {
+		r.close();
+		s.close();
 	}
 
 }

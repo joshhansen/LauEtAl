@@ -35,11 +35,12 @@ import jhn.lauetal.ts.UnionTitleSearcher;
 import jhn.util.Config;
 import jhn.util.Log;
 import jhn.util.RandUtil;
+import jhn.util.Util;
 import jhn.wp.Fields;
 
 
 
-public class LauEtAl {
+public class LauEtAl implements AutoCloseable {
 	private static final Version luceneVersion = Version.LUCENE_36;
 	
 	public static class ScoredLabel {
@@ -275,5 +276,15 @@ public class LauEtAl {
 //		}
 		
 		topicWordIdx.close();
+	}
+
+	@Override
+	public void close() throws Exception {
+		log.close();
+		Util.closeIfPossible(openNlp);
+		Util.closeIfPossible(raco);
+		Util.closeIfPossible(titleSearcher);
+		Util.closeIfPossible(titleChecker);
+		Util.closeIfPossible(labelWordAssocMeas);
 	}
 }

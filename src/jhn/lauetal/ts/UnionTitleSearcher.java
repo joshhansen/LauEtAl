@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class UnionTitleSearcher implements TitleSearcher {
+import jhn.util.Util;
+
+public class UnionTitleSearcher implements TitleSearcher, AutoCloseable {
 	private final int n;
 	private final OrderedTitleSearcher[] searchers;
 	public UnionTitleSearcher(int topN, OrderedTitleSearcher... searchers) {
@@ -26,6 +28,13 @@ public class UnionTitleSearcher implements TitleSearcher {
 		}
 		
 		return titles;
+	}
+
+	@Override
+	public void close() throws Exception {
+		for(OrderedTitleSearcher searcher : searchers) {
+			Util.closeIfPossible(searcher);
+		}
 	}
 
 }
