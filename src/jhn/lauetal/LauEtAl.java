@@ -92,8 +92,9 @@ public class LauEtAl implements AutoCloseable {
 		ScoredLabel[] scored = new ScoredLabel[labels.size()];
 		
 		int idx = 0;
+		double assoc;
 		for(String label : labels) {
-			double assoc = labelWordAssocMeas.association(label, topWords);
+			assoc = labelWordAssocMeas.association(label, topWords);
 			scored[idx++] = new ScoredLabel(label, assoc);
 		}
 		
