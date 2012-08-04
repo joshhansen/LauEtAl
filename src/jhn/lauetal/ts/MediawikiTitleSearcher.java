@@ -54,12 +54,16 @@ public class MediawikiTitleSearcher implements OrderedTitleSearcher {
 		
 		
 		List<String> titles = new ArrayList<>();
-		JSONObject json = (JSONObject) JSONValue.parse(jsonS);
-		JSONObject query = (JSONObject) json.get("query");
-		JSONArray search = (JSONArray) query.get("search");
-		for(Object entryO : search) {
-			JSONObject entry = (JSONObject) entryO;
-			titles.add(entry.get("title").toString());
+		try {
+			JSONObject json = (JSONObject) JSONValue.parse(jsonS);
+			JSONObject query = (JSONObject) json.get("query");
+			JSONArray search = (JSONArray) query.get("search");
+			for(Object entryO : search) {
+				JSONObject entry = (JSONObject) entryO;
+				titles.add(entry.get("title").toString());
+			}
+		} catch(NullPointerException e) {
+			System.err.println("Got result: " + jsonS);
 		}
 		return titles;
 	}
