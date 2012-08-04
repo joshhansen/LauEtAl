@@ -183,7 +183,6 @@ public class LauEtAl implements AutoCloseable {
 		return fallbacks;
 	}
 	
-	private static final boolean SPOOFED_DELAY = true;
 	public void labelAllTopics(String topicKeysFilename, String outputFilename) throws Exception {
 		BufferedReader r = new BufferedReader(new FileReader(topicKeysFilename));
 		PrintWriter w = new PrintWriter(new FileWriter(outputFilename), true);
@@ -214,7 +213,7 @@ public class LauEtAl implements AutoCloseable {
 			w.println("\"");
 			
 			final int base = 60 + RandUtil.rand.nextInt(60);
-			if(SPOOFED_DELAY) {
+			if(conf.isTrue(Options.SPOOF_DELAY)) {
 				int seconds = base + RandUtil.rand.nextInt(60);
 				Thread.sleep(seconds*1000);
 			}
@@ -234,6 +233,7 @@ public class LauEtAl implements AutoCloseable {
 		conf.putDouble(Options.MIN_AVG_RACO, 0.1);
 		conf.putInt(Options.NUM_FALLBACK_CANDIDATES, 5);
 		conf.putInt(Options.TITLE_UNION_TOP_N, 10);
+		conf.putBool(Options.SPOOF_DELAY, true);
 		
 		final int run = jhn.Paths.nextRun(Paths.runsDir());
 		new File(Paths.runDir(run)).mkdirs();
