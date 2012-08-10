@@ -5,7 +5,8 @@ import java.io.File;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
 
-import jhn.assoc.PhraseWordProportionalPMI;
+import jhn.assoc.AssociationMeasure;
+import jhn.assoc.AverageWordWordPMI;
 import jhn.lauetal.tc.HTTPTitleChecker;
 import jhn.lauetal.tc.LuceneTitleChecker;
 import jhn.lauetal.tc.OrderedTitleChecker;
@@ -18,7 +19,6 @@ import jhn.lauetal.ts.TitleSearcher;
 import jhn.lauetal.ts.UnionTitleSearcher;
 import jhn.util.Config;
 import jhn.util.Log;
-import jhn.wp.Fields;
 
 public class RunLau {
 	public static void main(String[] args) throws Exception {
@@ -44,7 +44,11 @@ public class RunLau {
 		IndexReader topicWordIdx = IndexReader.open(FSDirectory.open(new File(topicWordDir)));
 		IndexReader titleIdx = IndexReader.open(FSDirectory.open(new File(jhn.Paths.titleIndexDir())));
 		
-		PhraseWordProportionalPMI assocMeasure = new PhraseWordProportionalPMI(topicWordIdx, Fields.text, conf.getInt(Options.PROP_PMI_MAX_HITS));
+		String wordIdxFilename = jhn.Paths.outputDir("JhnCommon") + "/word_sets/chunks/19.set";
+		String countsDbFilename = jhn.Paths.outputDir("JhnCommon") + "/counts/counts.sqlite3";
+		String cocountsDbFilename = jhn.Paths.outputDir("JhnCommon") + "/cocounts/cocounts.sqlite3";
+		AssociationMeasure<String,String> assocMeasure = new AverageWordWordPMI(wordIdxFilename, countsDbFilename, cocountsDbFilename);
+		
 		OrderedTitleSearcher ts1 = new MediawikiTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
 		OrderedTitleSearcher ts2 = new LuceneTitleSearcher(topicWordIdx, conf.getInt(Options.TITLE_SEARCHER_TOP_N));
 		OrderedTitleSearcher ts3 = new GoogleTitleSearcher(conf.getInt(Options.TITLE_SEARCHER_TOP_N));
