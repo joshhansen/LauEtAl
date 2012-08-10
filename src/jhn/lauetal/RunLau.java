@@ -55,29 +55,10 @@ public class RunLau {
 		
 		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2, ts3);
 		TitleChecker tc = new OrderedTitleChecker(new LuceneTitleChecker(titleIdx), new HTTPTitleChecker());
-		LauEtAl l = new LauEtAl(conf, log, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts, tc);
-
-//		String keysFilename = Paths.projectDir() + "/datasets/reuters-keys.txt";
-		String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);
-//		String topicLabelsFilename = Paths.outputDir() + "/reuters-labels.txt";
-		String topicLabelsFilename = Paths.topicLabelsFilename(run) + "_2";
-		l.labelAllTopics(keysFilename, topicLabelsFilename);
-		
-////		final String topic = "government republican states";
-////		final String topic = "mazda maruts man ahura";
-////		final String topic = "california oregon pacific wealth believed";
-////		final String topic = "act territory convention American foreign";
-//		final String topic = "Lord God people man earth";
-//		final String[] topicWords = topic.split(" ");
-//		ScoredLabel[] labels = l.labelTopic(topicWords);
-//		log.println("Labels for topic '" + topic + "':");
-//		for(ScoredLabel sl : labels) {
-//			log.print('\t');
-//			log.print(sl.label);
-//			log.print(": ");
-//			log.println(sl.score);
-//		}
-		
-		topicWordIdx.close();
+		try(LauEtAl l = new LauEtAl(conf, log, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts, tc)) {
+			String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);
+			String topicLabelsFilename = Paths.topicLabelsFilename(run) + "_2";
+			l.labelAllTopics(keysFilename, topicLabelsFilename);
+		}
 	}
 }
