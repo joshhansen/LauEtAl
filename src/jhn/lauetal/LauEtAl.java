@@ -186,43 +186,41 @@ public class LauEtAl implements AutoCloseable {
 	}
 	
 	public void labelAllTopics(String topicKeysFilename, String outputFilename) throws Exception {
-		BufferedReader r = new BufferedReader(new FileReader(topicKeysFilename));
-		PrintWriter w = new PrintWriter(new FileWriter(outputFilename), true);
+		try(	BufferedReader r = new BufferedReader(new FileReader(topicKeysFilename));
+				PrintWriter w = new PrintWriter(new FileWriter(outputFilename), true)) {
 		
-		String[] parts;
-		String[] topicWords;
-		ScoredLabel[] labels;
-		String tmp = null;
-		int topicNum;
-		while( (tmp=r.readLine()) != null) {
-			log.println(tmp);
-			parts = tmp.split("\\s+");
-			
-			topicNum = Integer.parseInt(parts[0]);
-			
-			topicWords = new String[parts.length - 2];
-			for(int i = 2; i < parts.length; i++) {
-				topicWords[i-2] = parts[i];
-			}
-			labels = labelTopic(topicWords);
-			w.print(topicNum);
-			for(String word : topicWords) {
-				w.print(',');
-				w.print(word);
-			}
-			w.print(",\"");
-			w.print(labels[0].label);
-			w.println("\"");
-			
-			final int base = 60 + RandUtil.rand.nextInt(60);
-			if(conf.isTrue(Options.SPOOF_DELAY)) {
-				int seconds = base + RandUtil.rand.nextInt(60);
-				Thread.sleep(seconds*1000);
+			String[] parts;
+			String[] topicWords;
+			ScoredLabel[] labels;
+			String tmp = null;
+			int topicNum;
+			while( (tmp=r.readLine()) != null) {
+				log.println(tmp);
+				parts = tmp.split("\\s+");
+				
+				topicNum = Integer.parseInt(parts[0]);
+				
+				topicWords = new String[parts.length - 2];
+				for(int i = 2; i < parts.length; i++) {
+					topicWords[i-2] = parts[i];
+				}
+				labels = labelTopic(topicWords);
+				w.print(topicNum);
+				for(String word : topicWords) {
+					w.print(',');
+					w.print(word);
+				}
+				w.print(",\"");
+				w.print(labels[0].label);
+				w.println("\"");
+				
+				final int base = 60 + RandUtil.rand.nextInt(60);
+				if(conf.isTrue(Options.SPOOF_DELAY)) {
+					int seconds = base + RandUtil.rand.nextInt(60);
+					Thread.sleep(seconds*1000);
+				}
 			}
 		}
-		w.close();
-		r.close();
-	}
 	}
 
 	@Override
