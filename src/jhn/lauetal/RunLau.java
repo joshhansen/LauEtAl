@@ -34,7 +34,7 @@ public class RunLau {
 		conf.putInt(Options.TITLE_UNION_TOP_N, 10);
 		conf.putBool(Options.SPOOF_DELAY, true);
 		
-		final int run = jhn.Paths.nextRun(Paths.runsDir());
+		final int run = jhn.Paths.nextRun(Paths.defaultRunsDir());
 		new File(Paths.runDir(run)).mkdirs();
 		Log log = new Log(System.out, Paths.logFilename(run));
 		log.println("Lau, et al. configuration:");

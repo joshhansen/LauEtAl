@@ -15,16 +15,26 @@ public final class Paths {
 		return jhn.Paths.outputDir("LauEtAl");
 	}
 	
-	public static String runsDir() {
+	public static String defaultRunsDir() {
 		return outputDir() + "/runs";
 	}
 	
-	public static String runDir(int run) {
-		return runsDir() + "/" + run;
+	public static String runDir(String runsDir, int run) {
+		return runsDir + "/" + run;
 	}
 	
+	@Deprecated
+	public static String runDir(int run) {
+		return runDir(defaultRunsDir(), run);
+	}
+
+	public static String logFilename(String runDir) {
+		return runDir + "/main.log";
+	}
+	
+	@Deprecated
 	public static String logFilename(int run) {
-		return runDir(run) + "/main.log";
+		return logFilename(runDir(run));
 	}
 	
 	public static String modelsBase() {
@@ -39,16 +49,27 @@ public final class Paths {
 		return modelsBase() + "/en-pos-maxent.bin";
 	}
 	
+	@Deprecated
 	public static String nextRunDir() {
-		return runDir(jhn.Paths.nextRun(runsDir()));
+		return runDir(jhn.Paths.nextRun(defaultRunsDir()));
+	}
+
+	public static String documentLabelHitDataFilename(String runDir) {
+		return runDir + "/document_label_hit_data.csv";
 	}
 	
+	@Deprecated
 	public static String documentLabelHitDataFilename(int run) {
-		return runDir(run) + "/document_label_hit_data.csv";
+		return documentLabelHitDataFilename(runDir(run));
+	}
+
+	public static String topicLabelsFilename(String runDir) {
+		return runDir + "/topic_labels.csv";
 	}
 	
+	@Deprecated
 	public static String topicLabelsFilename(int run) {
-		return runDir(run) + "/topic_labels.csv";
+		return topicLabelsFilename(runDir(run));
 	}
 
 }
