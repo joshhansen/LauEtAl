@@ -32,11 +32,6 @@ public final class Paths {
 		return runDir + "/main.log";
 	}
 	
-	@Deprecated
-	public static String logFilename(int run) {
-		return logFilename(runDir(run));
-	}
-	
 	public static String modelsBase() {
 		return projectDir() + "/models";
 	}
@@ -47,11 +42,6 @@ public final class Paths {
 	
 	public static String posTaggerFilename() {
 		return modelsBase() + "/en-pos-maxent.bin";
-	}
-	
-	@Deprecated
-	public static String nextRunDir() {
-		return runDir(jhn.Paths.nextRun(defaultRunsDir()));
 	}
 
 	public static String documentLabelHitDataFilename(String runDir) {
