@@ -23,7 +23,6 @@ import jhn.lauetal.ts.TitleSearcher;
 import jhn.util.Config;
 import jhn.util.Log;
 import jhn.util.RandUtil;
-import jhn.util.Util;
 
 
 
@@ -226,10 +225,5 @@ public class LauEtAl implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		log.close();
-		Util.closeIfPossible(openNlp);
-		Util.closeIfPossible(raco);
-		Util.closeIfPossible(titleSearcher);
-		Util.closeIfPossible(titleChecker);
-		Util.closeIfPossible(labelWordAssocMeas);
 	}
 }
