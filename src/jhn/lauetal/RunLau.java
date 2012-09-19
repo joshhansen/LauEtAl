@@ -22,9 +22,10 @@ import jhn.util.Log;
 
 public class RunLau {
 	public static void main(String[] args) throws Exception {
-		final String topicWordDir = jhn.eda.Paths.topicWordIndexDir("wp_lucene4");
-		final String linksDir = jhn.eda.Paths.indexDir("page_links");
-		final String artCatsDir = jhn.eda.Paths.indexDir("article_categories");
+		final String datasetName = "reuters21578_noblah";
+		final String topicWordDir = jhn.Paths.topicWordIndexDir("wp_lucene4");
+		final String linksDir = jhn.Paths.indexDir("page_links");
+		final String artCatsDir = jhn.Paths.indexDir("article_categories");
 		
 		Config conf = new Config();
 		conf.putInt(Options.PROP_PMI_MAX_HITS, 1000);
@@ -34,9 +35,11 @@ public class RunLau {
 		conf.putInt(Options.TITLE_UNION_TOP_N, 10);
 		conf.putBool(Options.SPOOF_DELAY, true);
 		
+		
 		final int run = jhn.Paths.nextRun(Paths.defaultRunsDir());
-		new File(Paths.runDir(run)).mkdirs();
-		Log log = new Log(System.out, Paths.logFilename(run));
+		final String runDir = Paths.runDir(Paths.defaultRunsDir(), run);
+		new File(runDir).mkdirs();
+		Log log = new Log(System.out, Paths.logFilename(runDir));
 		log.println("Lau, et al. configuration:");
 		log.println(conf);
 		
@@ -56,8 +59,8 @@ public class RunLau {
 		TitleSearcher ts = new UnionTitleSearcher(conf.getInt(Options.TITLE_UNION_TOP_N), ts1, ts2, ts3);
 		TitleChecker tc = new OrderedTitleChecker(new LuceneTitleChecker(titleIdx), new HTTPTitleChecker());
 		try(LauEtAl l = new LauEtAl(conf, log, linksDir, artCatsDir, Paths.chunkerFilename(), Paths.posTaggerFilename(), assocMeasure, ts, tc)) {
-			String keysFilename = jhn.Paths.ldaKeysFilename("reuters21578", 0);
-			String topicLabelsFilename = Paths.topicLabelsFilename(run) + "_2";
+			String keysFilename = jhn.Paths.ldaKeysFilename(datasetName, 0);
+			String topicLabelsFilename = Paths.topicLabelsFilename(runDir) + "_2";
 			l.labelAllTopics(keysFilename, topicLabelsFilename);
 		}
 	}
