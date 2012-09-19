@@ -39,7 +39,10 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 	    List<String> titles = new ArrayList<>();
 	    
 	    for(Result result : results.getResponseData().getResults()) {
-	    	titles.add(cleanTitle(result.getTitleNoFormatting()));
+	    	String title = cleanTitle(result.getTitleNoFormatting());
+	    	if(labelOK(title)) {
+	    		titles.add(title);
+	    	}
 	    }
 	    
 	    return titles;
@@ -48,6 +51,18 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 	private static final Pattern wpTitleRgx = Pattern.compile("(.+?)( - Wiki.+)?( [.][.][.])?");
 	private static String cleanTitle(String title) {
 		return wpTitleRgx.matcher(title).replaceAll("$1");
+	}
+	
+	private static final Pattern badLabels = Pattern.compile("^(?:(?:Portal|Wikipedia|Category|File|Template|Book|MediaWiki|Help|P):)|(?:(?:List|Glossary|Index) of )");
+	private boolean labelOK(String label) {
+		if(badLabels.matcher(label).find()) {
+			return false;
+		}
+		
+		if(label.contains("(disambiguation)")) {
+			return false;
+		}
+		return true;
 	}
 	
 	private static class GoogleResults {
