@@ -38,7 +38,7 @@ public final class Paths {
 	}
 	
 	public static String modelsBase() {
-		return System.getenv("HOME") + "/Libraries/apache-opennlp-1.5.2-incubating/models";
+		return projectDir() + "/models";
 	}
 	
 	public static String chunkerFilename() {
