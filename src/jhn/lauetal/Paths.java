@@ -22,11 +22,6 @@ public final class Paths {
 	public static String runDir(String runsDir, int run) {
 		return runsDir + "/" + run;
 	}
-	
-	@Deprecated
-	public static String runDir(int run) {
-		return runDir(defaultRunsDir(), run);
-	}
 
 	public static String logFilename(String runDir) {
 		return runDir + "/main.log";
@@ -47,19 +42,9 @@ public final class Paths {
 	public static String documentLabelHitDataFilename(String runDir) {
 		return runDir + "/document_label_hit_data.csv";
 	}
-	
-	@Deprecated
-	public static String documentLabelHitDataFilename(int run) {
-		return documentLabelHitDataFilename(runDir(run));
-	}
 
 	public static String topicLabelsFilename(String runDir) {
 		return runDir + "/topic_labels.csv";
-	}
-	
-	@Deprecated
-	public static String topicLabelsFilename(int run) {
-		return topicLabelsFilename(runDir(run));
 	}
 
 }
