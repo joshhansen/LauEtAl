@@ -53,7 +53,7 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 		return wpTitleRgx.matcher(title).replaceAll("$1");
 	}
 	
-	private static final Pattern badLabels = Pattern.compile("^(?:(?:Portal|Wikipedia|Category|File|Template|Book|MediaWiki|Help|P):)|(?:(?:List|Glossary|Index) of )");
+	private static final Pattern badLabels = Pattern.compile("^(?:(?:Portal|Wikipedia|Category|File|Template|Book|MediaWiki|Help|P|Talk|User):)|(?:(?:List|Glossary|Index) of )");
 	private boolean labelOK(String label) {
 		if(badLabels.matcher(label).find()) {
 			return false;
