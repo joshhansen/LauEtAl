@@ -38,11 +38,15 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 	    
 	    List<String> titles = new ArrayList<>();
 	    
-	    for(Result result : results.getResponseData().getResults()) {
-	    	String title = cleanTitle(result.getTitleNoFormatting());
-	    	if(labelOK(title)) {
-	    		titles.add(title);
-	    	}
+	    try {
+		    for(Result result : results.getResponseData().getResults()) {
+		    	String title = cleanTitle(result.getTitleNoFormatting());
+		    	if(labelOK(title)) {
+		    		titles.add(title);
+		    	}
+		    }
+	    } catch(NullPointerException e) {
+	    	System.err.println("No response or other error in " + this.getClass().getName() + " (" + e.getClass().getName() + ")");
 	    }
 	    
 	    return titles;
