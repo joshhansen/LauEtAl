@@ -219,6 +219,15 @@ public class LauEtAl implements AutoCloseable {
 					Thread.sleep(seconds*1000);
 				}
 			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			
+			Throwable[] arr = e.getSuppressed();
+			for(int i = 0; i < arr.length; i++) {
+				System.err.println("Suppressed exception " + i);
+				arr[i].printStackTrace();
+			}
+			throw e;
 		}
 	}
 
