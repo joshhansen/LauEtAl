@@ -58,7 +58,7 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 	}
 	
 	private static final Pattern badLabels = Pattern.compile("^(?:(?:Portal|Wikipedia|Category|File|Template|Book|MediaWiki|Help|P|Talk|User):)|(?:(?:List|Glossary|Index) of )");
-	private boolean labelOK(String label) {
+	private static boolean labelOK(String label) {
 		if(badLabels.matcher(label).find()) {
 			return false;
 		}
@@ -110,10 +110,12 @@ public class GoogleTitleSearcher implements OrderedTitleSearcher {
 		private String url;
 		private String title;
 
+		@SuppressWarnings("unused")
 		public String getUrl() {
 			return url;
 		}
 
+		@SuppressWarnings("unused")
 		public String getTitle() {
 			return title;
 		}
